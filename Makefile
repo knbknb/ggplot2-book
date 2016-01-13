@@ -1,48 +1,39 @@
 TEXDIR := book/tex
-RMD_CHAPTERS := $(shell find . -name '*.rmd')
+RMD_CHAPTERS := $(shell ls ./*.rmd)
 TEX_CHAPTERS := $(patsubst ./%.rmd, $(TEXDIR)/%.tex, $(RMD_CHAPTERS))
 
 all: book/ggplot2-book.pdf
 
-book/ggplot2-book.pdf: $(TEXDIR)/ggplot2-book.pdf
-	cp $(TEXDIR)/ggplot2-book.pdf book/ggplot2-book.pdf
-	Rscript -e 'embedFonts("book/ggplot2-book.pdf")'
-	touch book/ggplot2-book.pdf
-	
 # compile tex to pdf
-# http://stackoverflow.com/questions/3148492/makefile-silent-remove
-$(TEXDIR)/ggplot2-book.pdf: $(TEXDIR)/ggplot2-book.tex $(TEXDIR)/krantz.cls $(TEX_CHAPTERS) tbls diagrams figures
-	cp -r figures $(TEXDIR)/figures
-	cp -r tbls $(TEXDIR)/tbls
-	cp -r diagrams $(TEXDIR)/diagrams
-	cd $(TEXDIR) && @rm ggplot2-book.ind 2> /dev/null || true
-	cd $(TEXDIR) && @rm ggplot2-book.out 2> /dev/null || true
-	cd $(TEXDIR) && xelatex ggplot2-book.tex
-	cd $(TEXDIR) && makeindex ggplot2-book.idx
-	cd $(TEXDIR) && xelatex ggplot2-book.tex 
-	cd $(TEXDIR) && xelatex ggplot2-book.tex
-	touch $(TEXDIR)/ggplot2-book.pdf
+book/ggplot2-book.pdf: $(TEXDIR) $(TEXDIR)/ggplot2-book.tex book/CHAPTERS
+	cp -R book/springer/* $(TEXDIR)
+	cp book/latexmk $(TEXDIR)/
+	cp book/latexmkrc $(TEXDIR)/
+	cd $(TEXDIR) && ./latexmk -xelatex -interaction=batchmode ggplot2-book.tex
+	cp $(TEXDIR)/ggplot2-book.pdf book/ggplot2-book.pdf
 
-# copy over LaTeX templates and style files
-$(TEXDIR)/krantz.cls: book/krantz.cls $(TEXDIR)
-	cp book/krantz.cls $(TEXDIR)/krantz.cls
-$(TEXDIR)/ggplot2-book.tex: book/ggplot2-book.tex $(TEXDIR)
+book/CHAPTERS: $(TEX_CHAPTERS)
+	cp -R _figures/* $(TEXDIR)/_figures
+	cp -R diagrams/* $(TEXDIR)/diagrams
+	# strip bad ICC metadata
+	find $(TEXDIR) -type f -name "*.png" -exec optipng -strip all -o0 -clobber -quiet {} \;
+	touch book/CHAPTERS
+
+$(TEXDIR)/%.tex: %.rmd
+	Rscript book/render-tex.R $<
+
+$(TEXDIR)/ggplot2-book.tex: book/ggplot2-book.tex
 	cp book/ggplot2-book.tex $(TEXDIR)/ggplot2-book.tex
 
-# rmd -> tex
-$(TEX_CHAPTERS): $(RMD_CHAPTERS)
-	Rscript render-tex.R $?
-	touch $(TEX_CHAPTERS)
-
-$(RMD_CHAPTERS): render-tex.R
-	touch $(RMD_CHAPTERS)
-
 $(TEXDIR):
-	mkdir $(TEXDIR)
-
-figures:
-	mkdir figures
+	mkdir -p $(TEXDIR)
+	mkdir -p $(TEXDIR)/_figures
+	mkdir -p $(TEXDIR)/diagrams
 
 clean:
-	rm -r $(TEXDIR)
-	rm -r tbls
+	rm -rf $(TEXDIR)
+	rm -rf _figures
+	rm -rf _cache
+	rm -rf *.html
+	rm -rf *.pdf
+	rm -rf book/ggplot2-book.pdf

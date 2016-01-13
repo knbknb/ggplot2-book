@@ -8,27 +8,34 @@ This is code and text behind the [ggplot2](http://ggplot2.org/book/) book. Pleas
 
 You can build the pdf by cloning this repo and running make:
 
-```
-$ git clone https://github.com/hadley/ggplot2-book.git
-$ cd ggplot2-book
-$ make
+```bash
+git clone https://github.com/hadley/ggplot2-book.git
+cd ggplot2-book
+make clean
+make
 ```
 
 If you use RStudio, you can press Cmd/Ctrl + Shift + B to run make.
 
 ## Installing dependencies
 
-There are a number of dependencies required to build this book. We have a full installation recipe for ubuntu 12.04 [here](https://github.com/hadley/ggplot2-book/blob/master/.travis.yml). Even if you run a different operating system, please look there for R package requirements. Most of the R packages are available on CRAN via `install.packages` except for [bookdown](https://github.com/hadley/bookdown) and [captioner](https://github.com/adletaw/captioner). You can install both with:
+To successfully build this book, you'll need:
+
+* R [package development prerequisites](https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites)
+* [pandoc and pandoc-citeproc](http://pandoc.org/installing.html),
+* the [Inconsolata font](http://www.ctan.org/tex-archive/fonts/inconsolata/)
+
+Install the R dependencies with:
 
 ```r
-devtools::install_github(c("adletaw/captioner", "hadley/bookdown"))
+library(devtools)
+if (packageVersion("devtools") < "1.9.1") {
+  message("Please upgrade devtools")
+}
+devtools::install_deps()
 ```
-
-You might also need to install the [inconsolata](http://www.ctan.org/tex-archive/fonts/inconsolata/) font.
 
 ## Internal links
 
 To link between sections, use internal links of the form `#header-id`.
 All header references are listed in `toc.yaml`.
-
-
