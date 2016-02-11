@@ -25,6 +25,7 @@ To successfully build this book, you'll need:
 * [pandoc and pandoc-citeproc](http://pandoc.org/installing.html),
 * the [Inconsolata font](http://www.ctan.org/tex-archive/fonts/inconsolata/)
 
+
 Install the R dependencies with:
 
 ```r
@@ -33,6 +34,14 @@ if (packageVersion("devtools") < "1.9.1") {
   message("Please upgrade devtools")
 }
 devtools::install_deps()
+
+devtools::install_github("hadley/bookdown")
+install.packages("Lahman")
+devtools::install_github("tdhock/directlabels")
+devtools::install_github("jgm/pandoc-citeproc")
+install.packages("wesanderson")
+install.packages("ggthemes")
+install.packages("USAboundaries")
 ```
 
 ## Internal links
